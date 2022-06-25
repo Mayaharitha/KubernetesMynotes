@@ -1,0 +1,55 @@
+pipeline {
+    agent {
+        label 'nodexxx'
+     }
+    stages {
+       stage('git checkout') {
+            'git branch: 'Master', credentialId: xxxx, gitUrl: xxxxx'
+        }
+    }
+    stages {
+       stage('Run Ansible playbook') {
+            'ansiblePlaybook credentialId: 'private-key', disableHostKeyChecking: true, installation: 'ansible2',
+             inventory: 'hosts', playbook: 'tomcat.yml'    
+        }
+    }
+
+
+-----------------------------------------------------------------
+
+- name: install and configure Tomcat
+  hosts: dev-servers
+  remote_user: ec2-user
+  become: yes
+  tasks:
+    - name: install java
+      yum:
+        name: java-11-amazon-correctto-headless.x84_64
+        state: present
+    - name: download tomcat
+      get_url:
+        url: https://tomxxxxxxxxxxx
+        dest: /opt
+        mode: '777'
+    - name: extract tomcat
+      unarchive:
+        src: /opt/*.tar.gz
+        dest: /opt
+        mode: '777'
+    - name: start tomcat
+      shell: nohup /opt/tomcatxxxx/bin/startup.sh &
+    - name:  copy contents
+      src: /xxxx/xxxx.war
+      dest: /opt/tomcatxxxx/webapps/xxxx.war
+      mode: '777'
+
+
+---------------------------------------------------
+
+hosts  -->
+
+[dev-servers]
+172.168.12.8  ansible_user=ec2-user  
+
+
+

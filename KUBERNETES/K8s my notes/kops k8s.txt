@@ -1,0 +1,28 @@
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/kops
+
+
+
+export KOPS_CLUSTER_NAME=mayaharita.com
+export KOPS_STATE_STORE=s3://mayak8s.in
+
+
+ * list clusters with: kops get cluster
+ * edit this cluster with: kops edit cluster mayaharita.com
+ * edit your node instance group: kops edit ig --name=mayaharita.com nodes-ap-south-1a
+ * edit your master instance group: kops edit ig --name=mayaharita.com master-ap-south-1a
+
+Finally configure your cluster with: kops update cluster --name mayaharita.com --yes --admin
+
+
+ * validate cluster: kops validate cluster --wait 10m
+ * list nodes: kubectl get nodes --show-labels
+ * ssh to the master: ssh -i ~/.ssh/id_rsa ubuntu@api.mayaharita.com
+ * the ubuntu user is specific to Ubuntu. If not using Ubuntu please use the appropriate user based on your OS.
+ * read about installing addons at: https://kops.sigs.k8s.io/addons.
+
+
+
+
+

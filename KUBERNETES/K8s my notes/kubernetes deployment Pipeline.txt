@@ -1,0 +1,50 @@
+pipeline {
+    agent {
+        label 'nodexxx'
+     }
+     tools {
+         maven 'maven3'
+     }
+     environment {
+     DockerTag = gitTagfunc()
+     }
+    stages {
+         stage('git checkout') {
+              steps {
+                   'git branch: 'Master', credentialId: xxxx, gitUrl: xxxxxx'
+	      }
+          }
+         stage('maven build') {
+              steps {
+                   sh'mvn clean package'
+	      }
+          }
+	 stage('docker image build') {
+              steps {
+                   sh'docker build -t xxxxx/appname:${DockerTag} .'
+	      }
+          }
+         stage('docker push image') {
+              steps {
+                   withCredentials([string(credentialId: xxxxxx, variable: 'password')]) {
+                    sh 'docker login -u usernmae -p ${password}'
+                    sh 'docker push xxxxx/appname:${DockerTag}'
+	      }
+          }
+        stage('deploy application into k8s') {
+             step {
+                  ssh-agent(['k8s-xxxx']) {
+                      sh 'scp -o StrictHostKeyChecking=no deploymentxxx.yml ec2-user@ipaddress:/path/xxxx'
+                      sh 'ssh ec2-user@ipaddress kubectl apply -f .'
+                  }
+             }
+       }
+
+  }
+}
+
+
+def gitTagfunc() {
+    def tag = sh script: 'git rev-parse HEAD', returnStdout=yes
+    return tag
+}

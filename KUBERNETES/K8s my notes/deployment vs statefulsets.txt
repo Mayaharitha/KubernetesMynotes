@@ -1,0 +1,120 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment_name
+  labels:
+    app: appname
+spec:
+  replicas: 3
+  selector:
+    matchLables:
+      app: appname
+  template:
+    metadata:
+      name: podname
+      labels:
+        app: appname
+    spec:
+      containers:
+        - name: xxxxx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: vol_xxxxx
+              mountPath: /xxx/xxx
+      volumes:
+      - name: vol_xxxxx
+        persistentVolumeClaim:
+          claimName: xxxxxx
+  
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vol_xxxxx
+spec:
+  storageClassName: xxxxx
+  capacity:
+    storage: 2Gi
+  accessModes:
+  - ReadWriteOnce
+  hostPath:
+    path: /xxx/xxx
+  persistentVolumeReclaimPolicy: Recycle
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vol_claim_xxxxx
+spec:
+  storageClassName: xxxx
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500MiB
+  
+
+------------------------------------------
+
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: xxxxx
+  labels:
+    app: appname
+spec:
+  serviceName: svc-xxxx
+  replicas: 3
+  selector:
+    matchLables:
+      app: appname
+  template:
+    metadata:
+      name: podname
+      labels:
+        app: appname
+    spec:
+      containers:
+        - name: xxxxx
+          image: nginx
+          ports:
+          - containerPort: 80
+          volumeMounts:
+          - name: vol_xxxx
+            mountPath: /xxx/xxxx
+  volumeClaimTemplates:
+  - metadata:
+      name: xxxxx
+    spec:
+      storageClassName: xxxx
+      accessModes
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 500MiB
+
+------------------------------------
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: svc-xxxx
+spec:
+  type: LoadBalancer
+  selector:
+    app: appname
+  ports:
+  - protocol: TCP
+    ports: 80
+    targetPort: 80
+    nodePort: 30001
+
+----------------------------------------------- 
+
+     
+
+
