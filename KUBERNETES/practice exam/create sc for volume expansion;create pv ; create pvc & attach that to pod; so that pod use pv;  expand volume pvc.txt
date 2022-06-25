@@ -1,0 +1,116 @@
+Certified Kubernetes Administrator (CKA): Practice Exam: Part 7
+--------------------------------------------------------------
+Introduction
+This lab provides practice scenarios to help prepare you for the Certified Kubernetes Administrator (CKA) Exam. You will be presented with tasks to complete, as well as server(s) and/or an existing Kubernetes cluster to complete them in. You will need to use your knowledge of Kubernetes to successfully complete the provided tasks, much like you would on the real CKA exam. Good luck!
+
+Solution
+Log in to the server using the credentials provided:
+
+ssh cloud_user@<PUBLIC_IP_ADDRESS>
+Note: When copying and pasting code into Vim from the lab guide, first enter :set paste (and then i to enter insert mode) to avoid adding unnecessary spaces and hashes. To save and quit the file, press Escape followed by :wq. To exit the file without saving, press Escape followed by :q!.
+
+Create a PersistentVolume
+Switch to the acgk8s context:
+kubectl config use-context acgk8s
+Create a YAML file named localdisk.yml:
+vim localdisk.yml
+In the file, paste the following:
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: localdisk
+provisioner: kubernetes.io/no-provisioner
+allowVolumeExpansion: true
+Save the file:
+ESC
+:wq
+Create a storage class using the YAML file:
+kubectl create -f localdisk.yml
+Create a YAML file named host-storage-pv.yml:
+vim host-storage-pv.yml
+In the file, paste the following:
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: host-storage-pv
+spec:
+  storageClassName: localdisk
+  persistentVolumeReclaimPolicy: Recycle
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /etc/data
+Save the file:
+ESC
+:wq
+Create the PersistentVolume:
+kubectl create -f host-storage-pv.yml
+Check the status of the volume:
+kubectl get pv host-storage-pv
+Check the status of the exam objectives:
+./verify.sh
+Create a Pod That Uses the PersistentVolume for Storage
+Create a YAML file named host-storage-pvc.yml:
+vim host-storage-pvc.yml
+In the file, paste the following:
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: host-storage-pvc
+  namespace: auth
+spec:
+  storageClassName: localdisk
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+Save the file:
+ESC
+:wq
+Create the PersistentVolumeClaim * in the same namespace as the pod:
+kubectl create -f host-storage-pvc.yml
+Check the status of the PersistentVolumeClaim:
+kubectl get pv
+Verify that the claim is bound to the volume:
+kubectl get pvc -n auth
+Create a YAML file named pv-pod.yml:
+vim pv-pod.yml
+In the file, paste the following:
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pv-pod
+  namespace: auth
+spec:
+  containers:
+  - name: busybox
+    image: busybox
+    command: ['sh', '-c', 'while true; do echo success > /output/output.log; sleep 5; done']
+    volumeMounts:
+    - name: pv-storage
+      mountPath: /output
+  volumes:
+  - name: pv-storage
+    persistentVolumeClaim:
+      claimName: host-storage-pvc
+Save the file:
+ESC
+:wq
+Create the pod:
+kubectl create -f pv-pod.yml
+Check the status of the exam objectives:
+./verify.sh
+Expand the PersistentVolumeClaim
+Edit host-storage-pvc:
+kubectl edit pvc host-storage-pvc -n auth
+Under spec, change the storage value to 200Mi.
+Save the file:
+ESC
+:wq
+Check the status of the exam objectives:
+./verify.sh
+Conclusion
+Congratulations — you've completed this hands-on lab!
